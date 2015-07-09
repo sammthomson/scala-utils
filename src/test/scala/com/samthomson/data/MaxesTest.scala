@@ -5,26 +5,40 @@ import org.scalatest.{Matchers, FlatSpec}
 import TraversableOnceOps._
 
 class MaxesTest extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
+  def f(x: (Short, Int)): Int = x._2
+
   "maxes" should "be non-empty for non-empty input" in {
     forAll { (head: Int, tail: List[Int]) =>
-      val maxes = (head :: tail).maxes
-      maxes shouldNot be (empty)
+      val input = head :: tail
+      input.maxes shouldNot be (empty)
+      input.mins shouldNot be (empty)
     }
   }
 
   it should "be empty for empty lists" in {
-    Vector[Int]().maxes should be (empty)
+    val input = Vector[Int]()
+    input.maxes should be (empty)
+    input.mins should be (empty)
   }
 
   it should "all be gteq everything in the input" in {
-    forAll { (head: (Short, Int), tail: List[(Short, Int)]) =>
-      val input = head :: tail
-      val maxes = input.maxesBy(_._2)
-      for (
-        (_, m) <- maxes;
-        (_, i) <- input
-      ) {
-        m shouldBe >= (i)
+    forAll { (input: List[(Short, Int)]) =>
+      for (m <- input.maxesBy(f); i <- input) {
+        f(m) shouldBe >= (f(i))
+      }
+      for (m <- input.minsBy(f); i <- input) {
+        f(m) shouldBe <= (f(i))
+      }
+    }
+  }
+
+  it should "all be contained in the input" in {
+    forAll { (input: List[(Short, Int)]) =>
+      for (m <- input.maxesBy(f)) {
+        input should contain (m)
+      }
+      for (m <- input.minsBy(f)) {
+        input should contain (m)
       }
     }
   }
