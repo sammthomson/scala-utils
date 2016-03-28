@@ -1,10 +1,9 @@
 package com.samthomson.data
 
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{Matchers, FlatSpec}
 import TraversableOnceOps._
 
-class MaxesTest extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
+
+class MaxesTest extends BaseTest {
   def f(x: (Short, Int)): Int = x._2
 
   "maxes" should "be non-empty for non-empty input" in {

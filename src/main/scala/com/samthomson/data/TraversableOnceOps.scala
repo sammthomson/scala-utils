@@ -3,11 +3,13 @@ package com.samthomson.data
 import com.samthomson.data.mutable.DefaultDict
 
 import scala.annotation.tailrec
-import scala.collection.generic.CanBuild
+import scala.collection.generic.{CanBuildFrom, CanBuild}
+import scala.language.higherKinds
 import scalaz.{Monoid, NonEmptyList}
 
 
-object TraversableOnceOps extends GroupBy with Maxes with BalancedReduce with LazyMergeSort
+object TraversableOnceOps
+    extends GroupBy with Maxes with BalancedReduce with LazyMergeSort with TakeTo
 
 trait GroupBy {
   implicit class GroupByOps[A](xs: TraversableOnce[A]) {
@@ -64,9 +66,7 @@ trait BalancedReduce {
      */
     def balancedReduce[B >: A](zero: B)(op: (B, B) => B): B = _balancedReduce(zero)(op)(xs)
 
-    def balancedReduceMonoid[B >: A](implicit monoid: Monoid[B]): B = {
-      balancedReduce(monoid.zero)((x, y) => monoid.append(x, y))
-    }
+    def balancedReduce[B >: A](implicit M: Monoid[B]): B = balancedReduce(M.zero)((x, y) => M.append(x, y))
   }
 
   /** keeps calling `reduceOnce` until there's only one element left */
@@ -153,6 +153,25 @@ trait LazyMergeSort {
       } else {
         a #:: lazyMerge(as.tail, bs)
       }
+    }
+  }
+}
+
+trait TakeTo {
+  // (Scala's type inference can't handle `[A, This <: TraversableOnce[A]]`)
+  implicit class TakeToOps[A, This](xs: This)(implicit ev: This <:< TraversableOnce[A]) {
+    /** Returns the longest prefix of elements that don't satisfy `p`,
+      * plus the first element that does satisfy `p` if one exists. */
+    def takeTo[That](p: A => Boolean)(implicit bf: CanBuildFrom[This, A, That]): That = {
+      import scala.util.control.Breaks.{breakable, break}
+      val b = bf()
+      breakable {
+        for (x <- xs) {
+          b += x
+          if (p(x)) break()
+        }
+      }
+      b.result()
     }
   }
 }

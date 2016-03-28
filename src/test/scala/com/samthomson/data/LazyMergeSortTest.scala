@@ -1,14 +1,12 @@
 package com.samthomson.data
 
 import com.samthomson.data.TraversableOnceOps.LazyMergeSortOps
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.immutable.Seq
 import scala.util.Random
 
 
-class LazyMergeSortTest extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks {
+class LazyMergeSortTest extends BaseTest {
   "LazyMergeSort.lazySorted"  should "match SeqLike.sorted" in {
     forAll { input: Vector[Float] =>
       val result = input.lazySorted.toVector
