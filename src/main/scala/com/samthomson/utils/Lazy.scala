@@ -2,7 +2,7 @@ package com.samthomson.utils
 
 
 /** A cell holding a lazily evaluated (and memoized) value */
-class Thunk[+A] private (a: => A) {
+class Lazy[+A] private(a: => A) {
   private[this] var _a: A = _
   private[this] var isSet: Boolean = false
 
@@ -17,9 +17,9 @@ class Thunk[+A] private (a: => A) {
   }
 
   override def toString: String = this.synchronized {
-    s"Thunk(${if (isSet) _a else "?"})"
+    s"Lazy(${if (isSet) _a else "?"})"
   }
 }
-object Thunk {
-  def apply[A](a: => A): Thunk[A] = new Thunk[A](a)
+object Lazy {
+  def apply[A](a: => A): Lazy[A] = new Lazy[A](a)
 }

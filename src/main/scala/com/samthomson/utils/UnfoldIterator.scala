@@ -10,14 +10,14 @@ import scala.collection.AbstractIterator
   * If `Some(a, s)`, then sets current state to `s`, yields `a`, and continues iterating.
   */
 class UnfoldIterator[S, A](start: S, val step: S => Option[(A, S)]) extends AbstractIterator[A] {
-  private[this] var _next = Thunk(step(start))
+  private[this] var _next = Lazy(step(start))
 
   override def hasNext: Boolean = _next.force.isDefined
 
   override def next(): A = _next.force match {
     case None => Iterator.empty.next()
     case Some((a, nextState)) =>
-      _next = Thunk(step(nextState))
+      _next = Lazy(step(nextState))
       a
   }
 }
