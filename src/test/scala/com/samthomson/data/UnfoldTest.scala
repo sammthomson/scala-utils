@@ -5,17 +5,19 @@ import org.scalacheck.Arbitrary.arbitrary
 
 import scala.collection.Iterator.iterate
 
-
-class UnfoldTest extends BaseTest {
+object UnfoldTest {
   type State = (Boolean, Boolean) // small state space (4 states)
   type Emit = Boolean
   type Step = State => Option[(Emit, State)]
 
   val MaxLen = 10 // so we don't iterate forever
 
-  implicit def stepArb: Arbitrary[Step] = Arbitrary[Step] {
-    for (m <- arbitrary[Map[State, (Emit, State)]]) yield m.get _
-  }
+  implicit def stepArb: Arbitrary[Step] = Arbitrary[Step](
+    arbitrary[Map[State, (Emit, State)]].map(_.get)
+  )
+}
+class UnfoldTest extends BaseTest {
+  import UnfoldTest._
 
   behavior of "unfold"
 
@@ -39,11 +41,11 @@ class UnfoldTest extends BaseTest {
     }
   }
 
-  behavior of "unfold.states"
+  behavior of "unfoldStates"
 
   it should "match a small fixture" in {
     def step(c: Char): Option[Char] = if (c >= 'j') None else Some((c + 1).toChar)
-    val result = unfold.states('a')(step)
+    val result = unfoldStates('a')(step)
     val expected = 'b' to 'j'
     result.toList should be (expected.toList)
   }
@@ -51,7 +53,7 @@ class UnfoldTest extends BaseTest {
   it should "match Iterator.iterate" in {
     forAll { (start: State, st: Step) =>
       def step(s: State): Option[State] = st(s).map(_._2)
-      val result = unfold.states(start)(step)
+      val result = unfoldStates(start)(step)
       val expected =
         iterate(Option(start))(_.flatMap(step))
             .drop(1)

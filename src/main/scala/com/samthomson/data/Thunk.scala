@@ -17,7 +17,7 @@ class Thunk[+A] private (a: => A) {
   }
 
   override def toString: String = this.synchronized {
-    if (isSet) s"Thunk(${_a})" else s"Thunk(<not evaluated yet>)"
+    s"Thunk(${if (isSet) _a else "?"})"
   }
 }
 object Thunk {
