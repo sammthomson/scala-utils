@@ -1,4 +1,4 @@
-package com.samthomson.data
+package com.samthomson.utils
 
 import scala.language.implicitConversions
 import scala.collection.AbstractIterator

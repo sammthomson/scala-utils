@@ -1,6 +1,6 @@
 package com.samthomson
 
-package object data {
+package object utils {
   /**
     * Continually calls `step` on the current state, starting with `start`.
     * If `None`, then stops iterating.

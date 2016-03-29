@@ -1,6 +1,6 @@
-package com.samthomson.data
+package com.samthomson.utils
 
-import com.samthomson.data.TraversableOnceOps.LazyMergeSortOps
+import com.samthomson.utils.TraversableOnceOps.LazyMergeSortOps
 
 import scala.collection.immutable.Seq
 import scala.util.Random

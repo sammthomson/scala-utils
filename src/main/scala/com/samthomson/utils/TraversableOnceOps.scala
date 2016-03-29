@@ -1,6 +1,6 @@
-package com.samthomson.data
+package com.samthomson.utils
 
-import com.samthomson.data.mutable.DefaultDict
+import com.samthomson.utils.data.DefaultDict
 
 import scala.collection.generic.{CanBuildFrom, CanBuild}
 import scala.annotation.tailrec

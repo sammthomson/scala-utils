@@ -1,6 +1,6 @@
-package com.samthomson.data
+package com.samthomson.utils
 
-import com.samthomson.data.TraversableOnceOps._
+import com.samthomson.utils.TraversableOnceOps._
 
 
 class TakeToOpsTest extends BaseTest {

@@ -1,4 +1,4 @@
-package com.samthomson.data
+package com.samthomson.utils
 
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary

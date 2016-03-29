@@ -1,4 +1,4 @@
-package com.samthomson.data
+package com.samthomson.utils
 
 
 /** A cell holding a lazily evaluated (and memoized) value */
