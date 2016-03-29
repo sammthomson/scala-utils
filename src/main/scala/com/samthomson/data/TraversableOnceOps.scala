@@ -5,11 +5,11 @@ import com.samthomson.data.mutable.DefaultDict
 import scala.annotation.tailrec
 import scala.collection.generic.{CanBuildFrom, CanBuild}
 import scala.language.higherKinds
-import scalaz.{Monoid, NonEmptyList}
 
 
 object TraversableOnceOps
     extends GroupBy with Maxes with BalancedReduce with LazyMergeSort with TakeTo
+
 
 trait GroupBy {
   implicit class GroupByOps[A](xs: TraversableOnce[A]) {
@@ -28,6 +28,7 @@ trait GroupBy {
     }
   }
 }
+
 
 trait Maxes {
   /**
@@ -57,6 +58,7 @@ trait Maxes {
   }
 }
 
+
 trait BalancedReduce {
   implicit class BalancedReduceOps[A](xs: TraversableOnce[A]) {
     /**
@@ -64,32 +66,32 @@ trait BalancedReduce {
      * we reduce bottom up, producing a balanced computation tree.
      * This is useful when the runtime of `op` depends on the max size of its inputs.
      */
-    def balancedReduce[B >: A](zero: B)(op: (B, B) => B): B = _balancedReduce(zero)(op)(xs)
-
-    def balancedReduce[B >: A](implicit M: Monoid[B]): B = balancedReduce(M.zero)((x, y) => M.append(x, y))
+    def balancedReduce[B >: A](zero: B)(op: (B, B) => B): B = BalancedReduce.reduce(zero)(op)(xs)
   }
-
+}
+object BalancedReduce {
   /** keeps calling `reduceOnce` until there's only one element left */
   @tailrec
-  final protected def _balancedReduce[B](zero: B)(op: (B, B) => B)(xs: TraversableOnce[B]): B = {
+  final def reduce[B](zero: B)(op: (B, B) => B)(xs: TraversableOnce[B]): B = {
     xs.toStream match {
       case Stream.Empty => zero
       case x #:: Stream.Empty => x
-      case xStream => _balancedReduce(zero)(op)(reduceOnce(zero)(op)(xStream))
+      case xStream => reduce(zero)(op)(reduceOnce(zero)(op)(xStream))
     }
   }
 
   /**
-   * Splits `xs` into adjacent pairs, and applies `op` to each.
-   * Produces a stream half the size (rounding up) of `xs`.
-   */
-  final protected def reduceOnce[A, B >: A](zero: B)(op: (B, B) => B)(xs: Stream[A]): Stream[B] = {
+    * Splits `xs` into adjacent pairs, and applies `op` to each.
+    * Produces a stream half the size (rounding up) of `xs`.
+    */
+  final protected def reduceOnce[B](zero: B)(op: (B, B) => B)(xs: Stream[B]): Stream[B] = {
     xs match {
       case x #:: y #:: rest => op(x, y) #:: reduceOnce(zero)(op)(rest)
       case _ => xs
     }
   }
 }
+
 
 trait LazyMergeSort {
   implicit class LazyMergeSortOps[A](xs: TraversableOnce[A])(implicit ord: Ordering[A]) {
@@ -102,7 +104,7 @@ trait LazyMergeSort {
       xs.toList match {
         case Nil => Stream.Empty
         case a :: tl =>
-          val runs = monotoneSeqs(tl, NonEmptyList(a), Nil, 0).map(_.stream)
+          val runs = monotoneSeqs(tl, List(a), Nil, 0).map(_.toStream)
           runs.balancedReduce(Stream.Empty)(lazyMerge[A])
       }
     }
@@ -114,9 +116,9 @@ trait LazyMergeSort {
      */
     @tailrec
     final protected def monotoneSeqs(remaining: List[A],
-                                     currentRun: NonEmptyList[A],
-                                     result: List[NonEmptyList[A]],
-                                     prevCmp: Int): List[NonEmptyList[A]] = {
+                                     currentRun: List[A],
+                                     result: List[List[A]],
+                                     prevCmp: Int): List[List[A]] = {
       def newResult = (if (prevCmp < 0) currentRun.reverse else currentRun) :: result
       remaining match {
         case Nil => newResult
@@ -125,10 +127,10 @@ trait LazyMergeSort {
           if (cmp * prevCmp >= 0) {
             // keep the streak going.
             val newCmp = if (cmp == 0) prevCmp else cmp
-            monotoneSeqs(rest, x <:: currentRun, result, newCmp)
+            monotoneSeqs(rest, x :: currentRun, result, newCmp)
           } else {
             // streak ended. wrap it up and start a new one.
-            monotoneSeqs(rest, NonEmptyList(x), newResult, 0)
+            monotoneSeqs(rest, List(x), newResult, 0)
           }
       }
     }
@@ -156,6 +158,7 @@ trait LazyMergeSort {
     }
   }
 }
+
 
 trait TakeTo {
   // (Scala's type inference can't handle `[A, This <: TraversableOnce[A]]`)
