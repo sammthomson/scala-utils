@@ -1,6 +1,8 @@
 package com.samthomson
 
 package object utils {
+  def timeIt[A](a: => A): A = Timer.default.timeAndLog(a)
+
   /**
     * Continually calls `step` on the current state, starting with `start`.
     * If `None`, then stops iterating.
