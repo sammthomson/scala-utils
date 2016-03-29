@@ -2,13 +2,13 @@ package com.samthomson.data
 
 import com.samthomson.data.mutable.DefaultDict
 
-import scala.annotation.tailrec
 import scala.collection.generic.{CanBuildFrom, CanBuild}
+import scala.annotation.tailrec
+import scala.{specialized => sp}
 import scala.language.higherKinds
 
-
 object TraversableOnceOps
-    extends GroupBy with Maxes with BalancedReduce with LazyMergeSort with TakeTo
+    extends GroupBy with Maxes with LazyMean with BalancedReduce with LazyMergeSort with TakeTo
 
 
 trait GroupBy {
@@ -55,6 +55,20 @@ trait Maxes {
     def maxes[B >: A](implicit ord: Ordering[B]): List[A] = maxesBy[A, B](identity)(ord)
 
     def mins[B >: A](implicit  ord: Ordering[B]): List[A] = xs.maxes(ord.reverse)
+  }
+}
+
+trait LazyMean {
+  import Fractional.Implicits._
+
+  implicit class LazyMeanOps[@sp(Float, Double) N](xs: TraversableOnce[N])(implicit N: Fractional[N]) {
+    /** Adapted from http://stackoverflow.com/questions/1930454/what-is-a-good-solution-for-calculating-an-average-where-the-sum-of-all-values-e */
+    def mean: N = xs.toIterator.zipWithIndex.foldLeft(N.zero)(step)
+    def runningMean: Iterator[N] = xs.toIterator.zipWithIndex.scanLeft(N.zero)(step)
+
+    private val step: (N, (N, Int)) => N = {
+      case (avg, (next, i)) => avg + (next - avg) / N.fromInt(i + 1)
+    }
   }
 }
 
