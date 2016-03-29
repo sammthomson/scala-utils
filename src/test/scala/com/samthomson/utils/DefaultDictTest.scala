@@ -1,6 +1,4 @@
-package com.samthomson.utils.data
-
-import com.samthomson.utils.BaseTest
+package com.samthomson.utils
 
 class DefaultDictTest extends BaseTest {
   behavior of "DefaultDict"

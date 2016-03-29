@@ -1,4 +1,4 @@
-package com.samthomson.utils.data
+package com.samthomson.utils
 
 import scala.collection.{mutable => m}
 
