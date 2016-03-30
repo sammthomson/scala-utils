@@ -1,8 +1,5 @@
 package com.samthomson.utils
 
-import java.io.PrintStream
-import com.sun.xml.internal.ws.util.ByteArrayBuffer
-
 
 class TimerTest extends BaseTest {
 
@@ -10,8 +7,8 @@ class TimerTest extends BaseTest {
 
   it should "time" in {
     val mockClock = Iterator.from(0, 1234000)
-    val mockLog = new ByteArrayBuffer()
-    val timer = Timer(mockClock.next, new PrintStream(mockLog))
+    val mockLog = StringBuilder.newBuilder
+    val timer = Timer(mockClock.next, mockLog ++= _ + "\n")
     val (result, time) = timer.time { Some(true) }
     result should be (Some(true))
     time should be (1234000)
@@ -22,8 +19,8 @@ class TimerTest extends BaseTest {
 
   it should "time and log msg" in {
     val mockClock = Iterator.from(0, 1234000)
-    val mockLog = new ByteArrayBuffer()
-    val timer = Timer(mockClock.next, new PrintStream(mockLog))
+    val mockLog = StringBuilder.newBuilder
+    val timer = Timer(mockClock.next, mockLog ++= _ + "\n")
     val result = timer.timeAndLogMsg("asdf") { Some(true) }
     result should be (Some(true))
     mockLog.toString should be ("asdf completed in 1.234 millis\n")
