@@ -18,19 +18,20 @@ object UnfoldTest {
 }
 class UnfoldTest extends BaseTest {
   import UnfoldTest._
+  import AnyOps._
 
   behavior of "unfold"
 
   it should "match a small fixture" in {
     def step(i: Int): Option[(Char, Int)] = if (i >= 9) None else Some((('a' + i + 1).toChar, i + 1))
-    val result = unfold(0)(step)
+    val result = 0 unfold step
     val expected = 'b' to 'j'
     result.toList should be (expected.toList)
   }
 
   it should "match Iterator.iterate" in {
     forAll { (start: State, step: Step) =>
-      val result = unfold(start)(step)
+      val result = start unfold step
       val expected =
         iterate(Option((null.asInstanceOf[Emit], start))){ _.map(_._2).flatMap(step) }
             .drop(1)
@@ -41,22 +42,21 @@ class UnfoldTest extends BaseTest {
     }
   }
 
-  behavior of "unfoldStates"
+  behavior of "iterate"
 
   it should "match a small fixture" in {
     def step(c: Char): Option[Char] = if (c >= 'j') None else Some((c + 1).toChar)
-    val result = unfoldStates('a')(step)
-    val expected = 'b' to 'j'
-    result.toList should be (expected.toList)
+    val result = 'a' iterate step
+    val expected = 'a' to 'j'
+    result.toList should be (expected)
   }
 
   it should "match Iterator.iterate" in {
     forAll { (start: State, st: Step) =>
       def step(s: State): Option[State] = st(s).map(_._2)
-      val result = unfoldStates(start)(step)
+      val result = start iterate step
       val expected =
         iterate(Option(start))(_.flatMap(step))
-            .drop(1)
             .takeWhile(_.isDefined)
             .map(_.get)
       result.take(MaxLen).toList should be (expected.take(MaxLen).toList)
