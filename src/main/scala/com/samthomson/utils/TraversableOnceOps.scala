@@ -1,29 +1,33 @@
 package com.samthomson.utils
 
-import scala.collection.generic.{CanBuildFrom, CanBuild}
 import scala.annotation.tailrec
-import scala.{specialized => sp}
+import scala.collection._
+import scala.collection.generic.CanBuild
 import scala.language.higherKinds
+import scala.{specialized => sp}
 
 object TraversableOnceOps
     extends GroupBy with Maxes with LazyMean with BalancedReduce with LazyMergeSort with TakeTo
 
 
 trait GroupBy {
-  implicit class GroupByOps[A](xs: TraversableOnce[A]) {
-    def groupBy[K, Coll[_]](f: A => K)(implicit cb: CanBuild[A, Coll[A]]): Map[K, Coll[A]] = {
-      xs.map(x => (f(x), x)).toMultimap
-    }
-  }
-
-  implicit class MultimapOps[K, V](xs: TraversableOnce[(K, V)]) {
-    def toMultimap[Coll[_]](implicit cb: CanBuild[V, Coll[V]]): Map[K, Coll[V]] = {
+  implicit class GroupByOps[X](xs: GenTraversableOnce[X]) {
+    def mapGroup[K, V, Coll[_]](f: X => (K, V))(implicit cb: CanBuild[V, Coll[V]]): Map[K, Coll[V]] = {
       val builders = DefaultDict((_: K) => cb.apply())
-      for ((k, v) <- xs) {
+      for (x <- xs) {
+        val (k, v) = f(x)
         builders(k) += v
       }
-      Map() ++ builders.mapValues(_.result())
+      builders.mapValues(_.result()).toMap
     }
+
+    def groupBy[K, Coll[_]](key: X => K)(implicit cb: CanBuild[X, Coll[X]]): Map[K, Coll[X]] =
+      xs.mapGroup(x => (key(x), x))
+  }
+
+  implicit class MultimapOps[K, V](xs: GenTraversableOnce[(K, V)]) {
+    def toMultimap[Coll[_]](implicit cb: CanBuild[V, Coll[V]]): Map[K, Coll[V]] =
+      xs.mapGroup(identity)
   }
 }
 
@@ -173,20 +177,19 @@ trait LazyMergeSort {
 
 
 trait TakeTo {
-  // (Scala's type inference can't handle `[A, This <: TraversableOnce[A]]`)
-  implicit class TakeToOps[A, This](xs: This)(implicit ev: This <:< TraversableOnce[A]) {
-    /** Returns the longest prefix of elements that don't satisfy `p`,
-      * plus the first element that does satisfy `p` if one exists. */
-    def takeTo[That](p: A => Boolean)(implicit bf: CanBuildFrom[This, A, That]): That = {
-      import scala.util.control.Breaks.{breakable, break}
-      val b = bf()
-      breakable {
-        for (x <- xs) {
-          b += x
-          if (p(x)) break()
-        }
-      }
-      b.result()
+  implicit class ItTakeToOps[A](xs: Iterator[A]) {
+    def takeTo(p: A => Boolean): Iterator[A] = {
+      var prev = false
+      xs.takeWhile { a => !prev && { prev = p(a); true } }
     }
   }
+
+  implicit class TravTakeToOps[A, To, From](xs: From)(implicit ev: From <:< TraversableLike[A, To]) {
+    def takeTo(p: A => Boolean): To = {
+      var prev = false
+      xs.takeWhile { a => !prev && { prev = p(a); true } }
+    }
+  }
+
+  // TODO: parallel collections
 }
