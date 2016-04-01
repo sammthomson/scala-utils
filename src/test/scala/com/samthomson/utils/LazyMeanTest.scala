@@ -10,7 +10,9 @@ class LazyMeanTest extends BaseTest {
       val input = head :: tail
       val mean = input.mean
       val expectedMean = input.sum / input.size
-      mean should be (roughlyEqualTo(expectedMean))
+      whenever (!expectedMean.isInfinite) {
+        mean should be(roughlyEqualTo(expectedMean))
+      }
     }
   }
 
@@ -20,7 +22,9 @@ class LazyMeanTest extends BaseTest {
       val means = input.runningMean
       for ((mean, i) <- means.zipWithIndex) {
         val expected = input.take(i).sum / math.max(i, 1)
-        mean should be (roughlyEqualTo(expected))
+        whenever (!expected.isInfinite) {
+          mean should be(roughlyEqualTo(expected))
+        }
       }
     }
   }
