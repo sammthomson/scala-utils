@@ -1,8 +1,8 @@
-name := "utils"
+name := "scala-utils"
 
 organization := "com.samthomson"
 
-version := "0.1-SNAPSHOT"
+version := "0.1"
 
 scalaVersion := "2.11.8"
 
@@ -12,3 +12,21 @@ libraryDependencies ++= Seq(
 )
 
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+
+bintrayReleaseOnPublish in ThisBuild := false
+
+credentials := (
+    if (isSnapshot.value)
+      Seq(Credentials(Path.userHome / ".bintray" / ".artifactory"))
+    else
+      credentials.value
+    )
+
+publishTo := (
+    if (isSnapshot.value)
+      Some("Artifactory Realm" at "https://oss.jfrog.org/artifactory/oss-snapshot-local")
+    else
+      publishTo.value
+    )
+
+bintrayReleaseOnPublish in ThisBuild := false

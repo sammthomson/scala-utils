@@ -3,4 +3,16 @@
 Scala Utils
 ===========
 
-Just some utility functions I commonly find myself needing.
+Some utility functions I commonly find myself needing.
+
+
+SBT
+---
+
+Add the following lines to your `build.sbt`:
+
+```sbt
+resolvers += Resolver.bintrayRepo("sammthomson", "maven")
+
+libraryDependencies += "com.samthomson" %% "scala-utils" % "0.1"
+```
