@@ -1,4 +1,4 @@
-package com.samthomson.utils
+package org.samthomson.utils
 
 import TraversableOnceOps.BalancedReduceOps
 import math._

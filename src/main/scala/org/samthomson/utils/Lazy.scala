@@ -1,5 +1,4 @@
-package com.samthomson.utils
-
+package org.samthomson.utils
 
 /** A cell holding a lazily evaluated (and memoized) value */
 class Lazy[+A] private (a: => A) {

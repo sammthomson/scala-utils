@@ -14,5 +14,5 @@ Add the following lines to your `build.sbt`:
 ```sbt
 resolvers += Resolver.bintrayRepo("sammthomson", "maven")
 
-libraryDependencies += "com.samthomson" %% "scala-utils" % "0.1"
+libraryDependencies += "org.samthomson" %% "scala-utils" % "0.2"
 ```

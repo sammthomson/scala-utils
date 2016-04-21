@@ -1,7 +1,7 @@
-package com.samthomson.utils
+package org.samthomson.utils
 
 class MultimapOpsTest extends BaseTest {
-  import com.samthomson.utils.TraversableOnceOps._
+  import TraversableOnceOps._
 
   val input = List(
     "a" -> 0, "a" -> 1, "a" -> 2,

@@ -1,5 +1,4 @@
-package com.samthomson.utils
-
+package org.samthomson.utils
 
 case class Timer(nanoTime: () => Long, log: String => Any) {
   def timeAndLog[A](a: => A): A = timeAndLogMsg("")(a)

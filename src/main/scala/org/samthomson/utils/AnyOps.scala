@@ -1,5 +1,4 @@
-package com.samthomson.utils
-
+package org.samthomson.utils
 
 object AnyOps extends Pipe with Unfold
 

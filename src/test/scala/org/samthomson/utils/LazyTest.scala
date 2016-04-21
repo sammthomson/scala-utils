@@ -1,4 +1,4 @@
-package com.samthomson.utils
+package org.samthomson.utils
 
 class LazyTest extends BaseTest {
   behavior of "Lazy"

@@ -1,4 +1,4 @@
-package com.samthomson.utils
+package org.samthomson.utils
 
 import scala.annotation.tailrec
 import scala.collection._

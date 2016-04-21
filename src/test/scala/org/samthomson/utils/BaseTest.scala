@@ -1,4 +1,4 @@
-package com.samthomson.utils
+package org.samthomson.utils
 
 import org.scalactic.TripleEqualsSupport.Spread
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
