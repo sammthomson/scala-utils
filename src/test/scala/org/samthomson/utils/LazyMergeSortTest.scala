@@ -7,7 +7,7 @@ import scala.util.Random
 
 
 class LazyMergeSortTest extends BaseTest {
-  "LazyMergeSort.lazySorted"  should "match SeqLike.sorted" in {
+  "LazyMergeSort.lazySorted" should "match SeqLike.sorted" in {
     forAll { input: Vector[Float] =>
       val result = input.lazySorted.toVector
       result should equal (input.sorted)
