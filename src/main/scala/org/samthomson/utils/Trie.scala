@@ -4,7 +4,7 @@ import scala.Predef.{any2stringadd => _, _}
 import scala.annotation.tailrec
 import scala.collection.generic.CanBuildFrom
 import scala.collection.immutable.SortedMap
-import scala.collection.{mutable => m, MapLike}
+import scala.collection.{mutable => m, AbstractIterator, MapLike}
 
 
 /**
@@ -61,11 +61,7 @@ case class Trie[+B] private (root: Option[B],
     }
   }
 
-  override def iterator: Iterator[(String, B)] =
-    root.iterator.map("" -> _) ++
-      suffixes.flatMap { case (c, child) => child.iterator.map {
-        case (str, v) => (c.toString + str, v)
-      } }
+  override def iterator: Iterator[(String, B)] = new Trie.TrieIterator[B](this)
 
   override def isEmpty: Boolean = root.isEmpty && suffixes.isEmpty
 
@@ -108,6 +104,24 @@ object Trie {
           }
       }
     go(startIndex, prefixes)
+  }
+
+  /** Depth-first (hence alphabetical) iteration through entries in `start` */
+  final class TrieIterator[B](start: Trie[B]) extends AbstractIterator[(String, B)] {
+    var queue = if (start.isEmpty) Nil else List((Vector[Char](), start))  // invariant: no empty tries in queue
+
+    override def hasNext: Boolean = queue.nonEmpty
+
+    @tailrec
+    override def next(): (String, B) = queue match {
+      case Nil => Iterator.empty.next()
+      case (prefix, trie) :: remaining =>
+        queue = trie.suffixes.toList.map({ case (c, child) => (prefix :+ c, child) }) ::: remaining
+        trie.root match {
+          case None => next()
+          case Some(v) => (prefix.mkString(""), v)
+        }
+    }
   }
 
   /** Splits s into its head and tail if s is non-empty */

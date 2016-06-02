@@ -6,7 +6,7 @@ import org.scalacheck.Arbitrary._
 
 object TrieTest {
   implicit def trieArb[B : Arbitrary]: Arbitrary[Trie[B]] = Arbitrary[Trie[B]](
-    arbitrary[Seq[(String, B)]].map(Trie(_: _*))
+    arbitrary[Seq[(String, B)]].map(Trie(_))
   )
 }
 class TrieTest extends BaseTest {
@@ -24,16 +24,16 @@ class TrieTest extends BaseTest {
   behavior of "Trie.+"
 
   it should "add the entry" in {
-    forAll { (m: Trie[Int], k: String, v: Int) =>
-      val updated = m + ((k, v))
+    forAll { (trie: Trie[Int], k: String, v: Int) =>
+      val updated = trie + ((k, v))
       updated.contains(k) should equal (true)
       updated.get(k) should equal (Some(v))
     }
   }
 
   it should "be idempotent" in {
-    forAll { (m: Trie[Int], k: String, v: Int) =>
-      val once = m + ((k, v))
+    forAll { (trie: Trie[Int], k: String, v: Int) =>
+      val once = trie + ((k, v))
       val twice = once + ((k, v))
       twice should equal (once)
     }
@@ -42,18 +42,18 @@ class TrieTest extends BaseTest {
   behavior of "Trie.-"
 
   it should "remove the entry" in {
-    forAll { (m: Trie[Int], k: String, v: Int) =>
-      (m - k).contains(k) should equal (false)
-      (m - k).get(k) should equal (None)
-      val updated = m + ((k, v))
+    forAll { (trie: Trie[Int], k: String, v: Int) =>
+      (trie - k).contains(k) should equal (false)
+      (trie - k).get(k) should equal (None)
+      val updated = trie + ((k, v))
       (updated - k).contains(k) should equal (false)
       (updated - k).get(k) should equal (None)
     }
   }
 
   it should "be idempotent" in {
-    forAll { (m: Trie[Int], k: String, v: Int) =>
-      val once = m - k
+    forAll { (trie: Trie[Int], k: String, v: Int) =>
+      val once = trie - k
       val twice = once - k
       twice should equal (once)
     }
@@ -61,7 +61,7 @@ class TrieTest extends BaseTest {
 
   behavior of "Trie.withPrefix"
 
-  it should "filter out keys that don't start with prefix, and removing prefix from beginning of each key" in {
+  it should "filter out keys that don't start with prefix, and remove prefix from start of each key" in {
     forAll { (trie: Trie[Int], prefix: String) =>
       // naive implementation
       val expected = trie.collect { case (k, v) if k.toString.startsWith(prefix) =>
@@ -74,19 +74,32 @@ class TrieTest extends BaseTest {
   behavior of "Trie.iterator"
 
   it should "contain each entry" in {
-    forAll { (entries: Map[String, Int]) =>
-      val m = Trie(entries.toSeq: _*)
-      m.iterator.toSet should equal (entries.toSet)
-      for ((k, v) <- m.iterator) {
+    forAll { (m: Map[String, Int]) =>
+      val trie = Trie(m)
+      trie.iterator.toSet should equal (m.toSet)
+      for ((k, v) <- trie.iterator) {
         m.get(k) should equal (Some(v))
+        trie.get(k) should equal (Some(v))
       }
+    }
+  }
+
+  it should "be in order" in {
+    forAll { (trie: Trie[Int]) =>
+      val entries = trie.iterator.toVector
+      entries.sortBy(_._1) should equal (entries)
     }
   }
 
   behavior of "Trie.matchAny"
 
   it should "work for small fixtures" in {
-    val prefixes = Trie("asdf" -> List(1), "asd" -> List(2), "bsd" -> List(3), "as" -> List(4))
+    val prefixes = Trie(
+      "asdf" -> List(1),
+      "asd"  -> List(2),
+      "bsd"  -> List(3),
+      "as"   -> List(4)
+    )
     val input = "gibberish asdf more gibberish"
     Trie.matchAny(prefixes, input) should equal (None)
     Trie.matchAny(prefixes, input, 10) should equal (Some(("as", List(4))))
